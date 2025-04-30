@@ -24,3 +24,4 @@ challenges_array = [
 
 ]
 PATH = R'C:\Users\User\PycharmProjects\pythonProject2\img\car'
+PATH = R'C:\Users\User\PycharmProjects\pythonProject2\img\car'
