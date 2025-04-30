@@ -1,5 +1,4 @@
 import matplotlib
-
 matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 from PIL import Image, ImageSequence, ImageDraw
@@ -21,44 +20,34 @@ def end(game):
     plt.show()
 
 
+def draw_ellipse_direction(draw, game, constant_index, index, coefficient, condition):
+    while condition(index):
+        if game.boardIsFilled[index][constant_index]:
+            break
+
+        x, y = game.xValues[index], game.yValues[constant_index]
+        draw.ellipse((x + 15, y + 15, x + 108, y + 108), fill="white")
+        index += coefficient
+
+
+def draw_ellipse_not_direction(draw, game, constant_index, index, coefficient, condition):
+    while condition(index):
+        if game.boardIsFilled[constant_index][index]:
+            break
+
+        x, y = game.xValues[constant_index], game.yValues[index]
+        draw.ellipse((x + 15, y + 15, x + 108, y + 108), fill="white")
+        index += coefficient
+
 def do_buttons(game, car):
     draw = ImageDraw.Draw(game.BACKGROUND)
-    # x, y = car.x, car.y
 
     if car.direction:
-        start = car.x - 1
-        while start >= 0:
-            if game.boardIsFilled[start][car.y]:
-                break
-
-            x, y = game.xValues[start], game.yValues[car.y]
-            draw.ellipse((x + 15, y + 15, x + 108, y + 108), fill="white")
-            start -= 1
-        start = car.x + car.length
-        while start < 6:
-            if game.boardIsFilled[start][car.y]:
-                break
-
-            x, y = game.xValues[start], game.yValues[car.y]
-            draw.ellipse((x + 15, y + 15, x + 108, y + 108), fill="white")
-            start += 1
+        draw_ellipse_direction(draw, game, constant_index=car.y, index=car.x - 1, coefficient=-1, condition=lambda index:index>=0)
+        draw_ellipse_direction(draw, game, constant_index=car.y, index= car.x + car.length, coefficient=1, condition=lambda index:index<6)
     else:
-        start = car.y - 1
-        while start >= 0:
-            if game.boardIsFilled[car.x][start]:
-                break
-
-            x, y = game.xValues[car.x], game.yValues[start]
-            draw.ellipse((x + 15, y + 15, x + 108, y + 108), fill="white")
-            start -= 1
-        start = car.y + car.length
-        while start < 6:
-            if game.boardIsFilled[car.x][start]:
-                break
-
-            x, y = game.xValues[car.x], game.yValues[start]
-            draw.ellipse((x + 15, y + 15, x + 108, y + 108), fill="white")
-            start += 1
+        draw_ellipse_not_direction(draw, game, constant_index=car.x, index=car.y - 1, coefficient=-1, condition=lambda index:index>=0)
+        draw_ellipse_not_direction(draw, game, constant_index=car.x, index=car.y + car.length, coefficient=1, condition=lambda index:index<6)
 
 
 # פונקציית ציור
@@ -70,10 +59,24 @@ def draw_board(game):
 
 
 def reset(game):
-    for car1 in game.cars:
-        if car1.car_selected['active']:
-            car1.car_selected['active'] = False
+    for car in game.cars:
+        if car.selected:
+            car.selected = False
     game.BACKGROUND = game.background_copy.copy()
+
+
+def is_x_and_y_in_car(game, car, x, y):
+    return game.xValues[car.x] <= x <= game.xValues[car.x] + car.img.width and \
+           game.yValues[car.y] <= y <= game.yValues[car.y] + car.img.height
+
+# עדכון התצוגה
+def update_display(game):
+    game.ax.clear()
+    game.ax.imshow(draw_board(game))
+    game.ax.set_title("RUSH HOUR")
+    game.ax.axis('off')
+    game.fig.canvas.draw()
+    plt.show()
 
 
 # תגובה ללחיצת עכבר
@@ -82,43 +85,37 @@ def onclick(event, game):
         return
 
     x, y = int(event.xdata), int(event.ydata)
-    for car in game.cars:
-        # אם לחצו על המכונית – הפוך ל־selected
-        if (game.xValues[car.x] <= x <= game.xValues[car.x] + car.img.width and
-                game.yValues[car.y] <= y <= game.yValues[car.y] + car.img.height):
-            reset(game)
-            car.car_selected["active"] = True
-            do_buttons(game, car)
-            game.update_display()
-            print("מכונית נבחרה", car.x)
-            print("מכונית נבחרה", car.y)
-            return
+    car_selected = next((car for car in game.cars if is_x_and_y_in_car(game, car, x, y)), None)
 
-    for car in game.cars:
-        if car.car_selected["active"]:
-            print(game.BACKGROUND.getpixel([x, y]))
-            if game.BACKGROUND.getpixel([x, y]) != (255, 255, 255, 255):
-                reset(game)
-                game.update_display()
-                return
-            # אם המכונית נבחרה ולחצו במקום חדש – הזז את המכונית
-            x, y = get_value(game, x, y, car)
+    if car_selected is not None:
+        reset(game)
+        car_selected.selected = True
+        do_buttons(game, car_selected)
+        update_display(game)
+        return
 
-            if x == -1 or y == -1: return
-            if car.i == 0 and x == 4 and y == 2:
-                end(game)
-                return
-            # boardIsFilled
-            game.signIsFillled(car, x, y)
+    car_selected = next((car for car in game.cars if car.selected), None)
+    if car_selected is None or game.BACKGROUND.getpixel([x, y]) != (255, 255, 255, 255):
+        reset(game)
+        update_display(game)
+        return
 
-            reset(game)
+    # אם המכונית נבחרה ולחצו במקום חדש – הזז את המכונית
+    x, y = get_value(game, x, y, car_selected)
 
-            car.x = x
-            car.y = y
-            car.car_selected["active"] = False
-            game.update_display()
-            return
+    if x == -1 or y == -1:
+        return
+
+    if car_selected.i == 0 and x == 4 and y == 2:
+        end(game)
+        return
+
+    game.sign_is_filled(car_selected, x, y)
+    car_selected.x = x
+    car_selected.y = y
     reset(game)
+    update_display(game)
+    return
 
 
 def get_value(game, x, y, car):
