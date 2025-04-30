@@ -18,7 +18,7 @@ class Car:
         self.img = self.img.resize((int(self.img.width * (7 / 6)),
                                    int(self.img.height * (7 / 6))),
                                    Image.NEAREST)
-        self.length = 2 if i < 10 else 3
+        self.length = 2 if i < 9 else 3
         if self.length == 3:
             self.img = self.img.resize((self.img.width, self.img.height - 25),
                                        Image.NEAREST)
@@ -59,3 +59,4 @@ class Game:
                 self.boardIsFilled[car.x][i] = False
             for i in range(new_y, new_y + car.length):
                 self.boardIsFilled[new_x][i] = True
+

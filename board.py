@@ -1,3 +1,5 @@
+import random
+
 import matplotlib
 matplotlib.use("TkAgg")
 from classes_of_game import Game, Car
@@ -5,7 +7,8 @@ import data
 
 
 def main():
-    challenge = data.challenges_array[0]
+    challenge = random.choice(data.challenges_array)
+
     game=Game(6)
 
     game.cars = [Car(
