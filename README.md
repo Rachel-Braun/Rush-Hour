@@ -1,26 +1,28 @@
-🎮 Rush Hour – A Puzzle Strategy Game
-Rush Hour is a logic-based puzzle game where the goal is to clear a traffic jam and free the red car stuck in gridlock — just like in real rush hour!
+# Rush Hour Game 🛻🟥
 
-Game Features:
-Dynamic 6x6 game board
+A Python implementation of the classic **Rush Hour** puzzle game.
 
-Vehicles with different lengths and orientations (horizontal/vertical)
+## 🎯 Goal
 
-Simple and intuitive GUI (e.g., using pygame, tkinter, etc.)
+Help the red car (ID: `'X'`) reach the exit on the right edge of the board by moving other vehicles out of its way.
 
-Optional solver (using BFS/DFS/A* algorithms) to find the shortest solution
+## 📦 Features
 
-Technologies Used:
-Python 3
+- Configurable 6x6 board
+- Multiple car objects with direction and length
+- Text-based interface
+- Move validation
+- Puzzle solver (optional advanced feature)
 
-Object-Oriented Design for cars and board state
+## 🚗 Vehicle Format
 
-Easily extendable with more levels or features
+Each vehicle is defined by:
 
-How to Play:
-Slide cars forward and backward within their lane.
-
-Objective: Move the red car to the exit on the right side of the board.
-
-Clear the path in as few moves as possible!
-
+```python
+{
+  "id": "A",           # Unique ID (string)
+  "row": 0,            # Starting row (0-indexed)
+  "col": 2,            # Starting column (0-indexed)
+  "dir": "H",          # 'H' for horizontal, 'V' for vertical
+  "length": 2          # 2 or 3
+}
